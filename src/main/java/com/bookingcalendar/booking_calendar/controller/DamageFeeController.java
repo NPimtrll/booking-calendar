@@ -65,8 +65,8 @@ public class DamageFeeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDamageFee(@PathVariable Long id) {
         return damageFeeRepository.findById(id)
-                .map(booking -> {
-                    damageFeeRepository.delete(booking);
+                .map(fee -> {
+                    damageFeeRepository.delete(fee);
                     return ResponseEntity.ok().build();
                 }).orElse(ResponseEntity.notFound().build());
     }
