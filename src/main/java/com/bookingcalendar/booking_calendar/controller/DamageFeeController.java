@@ -34,12 +34,12 @@ public class DamageFeeController {
     }
 
     @GetMapping("/{id}")
-    private ResponseEntity<DamageFee> getDamageFeeById(Long id) {
+    private ResponseEntity<DamageFee> getDamageFeeById(@PathVariable Long id) {
         return damageFeeRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DamageFee> updateDamageFee(Long id, @RequestBody DamageFee damageFeeDetails) {
+    public ResponseEntity<DamageFee> updateDamageFee(@PathVariable Long id, @RequestBody DamageFee damageFeeDetails) {
         return damageFeeRepository.findById(id).map(existingDamageFee -> {
             if (damageFeeDetails.getDescription() != null) {
                 existingDamageFee.setDescription(damageFeeDetails.getDescription());
