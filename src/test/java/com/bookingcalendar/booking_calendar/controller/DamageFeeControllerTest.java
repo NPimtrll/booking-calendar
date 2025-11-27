@@ -2,8 +2,7 @@ package com.bookingcalendar.booking_calendar.controller;
 
 import com.bookingcalendar.booking_calendar.entity.Booking;
 import com.bookingcalendar.booking_calendar.entity.DamageFee;
-import com.bookingcalendar.booking_calendar.repository.BookingRepository;
-import com.bookingcalendar.booking_calendar.repository.DamageFeeRepository;
+import com.bookingcalendar.booking_calendar.service.DamageFeeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,10 +29,7 @@ public class DamageFeeControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private DamageFeeRepository damageFeeRepository;
-
-    @MockBean
-    private BookingRepository bookingRepository;
+    private DamageFeeService damageFeeService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -58,8 +54,7 @@ public class DamageFeeControllerTest {
 
     @Test
     void createDamageFee_ShouldReturnCreatedDamageFee() throws Exception {
-        Mockito.when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
-        Mockito.when(damageFeeRepository.save(any(DamageFee.class))).thenReturn(damageFee);
+        Mockito.when(damageFeeService.createDamageFee(any(DamageFee.class))).thenReturn(damageFee);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/damagefee")
@@ -71,7 +66,7 @@ public class DamageFeeControllerTest {
 
     @Test
     void getAllDamageFees_ShouldReturnAllDamageFees() throws Exception {
-        Mockito.when(damageFeeRepository.findAll()).thenReturn(Arrays.asList(damageFee));
+        Mockito.when(damageFeeService.getAllDamageFees()).thenReturn(Arrays.asList(damageFee));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/damagefee")
@@ -83,7 +78,7 @@ public class DamageFeeControllerTest {
 
     @Test
     void getDamageFeeById_WithValidId_ShouldReturnDamageFee() throws Exception {
-        Mockito.when(damageFeeRepository.findById(1L)).thenReturn(Optional.of(damageFee));
+        Mockito.when(damageFeeService.getDamageFeeById(1L)).thenReturn(Optional.of(damageFee));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/damagefee/{id}", 1L)
@@ -94,7 +89,7 @@ public class DamageFeeControllerTest {
 
     @Test
     void getDamageFeeById_WithInvalidId_ShouldReturnNotFound() throws Exception {
-        Mockito.when(damageFeeRepository.findById(999L)).thenReturn(Optional.empty());
+        Mockito.when(damageFeeService.getDamageFeeById(999L)).thenReturn(Optional.empty());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/damagefee/{id}", 999L)
@@ -112,15 +107,6 @@ public class DamageFeeControllerTest {
         updateData.setTotalFee(700.0);
         updateData.setBooking(booking);
 
-        // Mock the existing damage fee that will be updated
-        DamageFee existingDamageFee = new DamageFee();
-        existingDamageFee.setId(1L);
-        existingDamageFee.setDescription("Original description");
-        existingDamageFee.setDamageCost(500.0);
-        existingDamageFee.setFineAmount(100.0);
-        existingDamageFee.setTotalFee(600.0);
-        existingDamageFee.setBooking(booking);
-
         // Mock the updated damage fee that will be returned
         DamageFee updatedDamageFee = new DamageFee();
         updatedDamageFee.setId(1L);
@@ -130,8 +116,8 @@ public class DamageFeeControllerTest {
         updatedDamageFee.setTotalFee(700.0);
         updatedDamageFee.setBooking(booking);
 
-        Mockito.when(damageFeeRepository.findById(1L)).thenReturn(Optional.of(existingDamageFee));
-        Mockito.when(damageFeeRepository.save(any(DamageFee.class))).thenReturn(updatedDamageFee);
+        Mockito.when(damageFeeService.updateDamageFee(anyLong(), any(DamageFee.class)))
+                .thenReturn(Optional.of(updatedDamageFee));
 
         mockMvc.perform(MockMvcRequestBuilders
                 .put("/api/damagefee/{id}", 1L)
@@ -144,7 +130,7 @@ public class DamageFeeControllerTest {
 
     @Test
     void updateDamageFee_WithInvalidId_ShouldReturnNotFound() throws Exception {
-        Mockito.when(damageFeeRepository.findById(999L)).thenReturn(Optional.empty());
+        Mockito.when(damageFeeService.updateDamageFee(anyLong(), any(DamageFee.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(MockMvcRequestBuilders
                 .put("/api/damagefee/{id}", 999L)
@@ -155,8 +141,7 @@ public class DamageFeeControllerTest {
 
     @Test
     void deleteDamageFee_WithValidId_ShouldReturnOk() throws Exception {
-        Mockito.when(damageFeeRepository.findById(1L)).thenReturn(Optional.of(damageFee));
-        Mockito.doNothing().when(damageFeeRepository).delete(any(DamageFee.class));
+        Mockito.when(damageFeeService.deleteDamageFee(1L)).thenReturn(true);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .delete("/api/damagefee/{id}", 1L)
@@ -166,7 +151,7 @@ public class DamageFeeControllerTest {
 
     @Test
     void deleteDamageFee_WithInvalidId_ShouldReturnNotFound() throws Exception {
-        Mockito.when(damageFeeRepository.findById(999L)).thenReturn(Optional.empty());
+        Mockito.when(damageFeeService.deleteDamageFee(999L)).thenReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders
                 .delete("/api/damagefee/{id}", 999L)

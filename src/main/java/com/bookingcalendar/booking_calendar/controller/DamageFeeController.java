@@ -14,61 +14,44 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookingcalendar.booking_calendar.entity.DamageFee;
-import com.bookingcalendar.booking_calendar.repository.DamageFeeRepository;
+import com.bookingcalendar.booking_calendar.service.DamageFeeService;
 
 @RestController
 @RequestMapping("/api/damagefee")
 public class DamageFeeController {
 
     @Autowired
-    private DamageFeeRepository damageFeeRepository;
+    private DamageFeeService damageFeeService;
 
     @PostMapping
     private DamageFee createDamageFee(@RequestBody DamageFee damagefee) {
-        return damageFeeRepository.save(damagefee);
+        return damageFeeService.createDamageFee(damagefee);
     }
 
     @GetMapping
     private List<DamageFee> getAllDamagefee() {
-        return damageFeeRepository.findAll();
+        return damageFeeService.getAllDamageFees();
     }
 
     @GetMapping("/{id}")
     private ResponseEntity<DamageFee> getDamageFeeById(@PathVariable Long id) {
-        return damageFeeRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return damageFeeService.getDamageFeeById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<DamageFee> updateDamageFee(@PathVariable Long id, @RequestBody DamageFee damageFeeDetails) {
-        return damageFeeRepository.findById(id).map(existingDamageFee -> {
-            if (damageFeeDetails.getDescription() != null) {
-                existingDamageFee.setDescription(damageFeeDetails.getDescription());
-            }
-            if (damageFeeDetails.getDamageCost() != null) {
-                existingDamageFee.setDamageCost(damageFeeDetails.getDamageCost());
-            }
-            if (damageFeeDetails.getFineAmount() != null) {
-                existingDamageFee.setFineAmount(damageFeeDetails.getFineAmount());
-            }
-            if (damageFeeDetails.getTotalFee() != null) {
-                existingDamageFee.setTotalFee(damageFeeDetails.getTotalFee());
-            }
-            if (damageFeeDetails.getBooking() != null) {
-                existingDamageFee.setBooking(damageFeeDetails.getBooking());
-            }
-
-            DamageFee updatedDamageFee = damageFeeRepository.save(existingDamageFee);
-            return ResponseEntity.ok(updatedDamageFee);
-        }).orElse(ResponseEntity.notFound().build());
+        return damageFeeService.updateDamageFee(id, damageFeeDetails)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDamageFee(@PathVariable Long id) {
-        return damageFeeRepository.findById(id)
-                .map(fee -> {
-                    damageFeeRepository.delete(fee);
-                    return ResponseEntity.ok().build();
-                }).orElse(ResponseEntity.notFound().build());
+        if (damageFeeService.deleteDamageFee(id)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
-
 }
